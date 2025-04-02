@@ -2,7 +2,7 @@
 
 > Video: https://www.youtube.com/watch?v=faEpYqyMrig
 >
-> Deck: TODO
+> Deck: https://pitch.com/v/team08_deck_taishang-ai-q83rfw
 >
 > 
 >
