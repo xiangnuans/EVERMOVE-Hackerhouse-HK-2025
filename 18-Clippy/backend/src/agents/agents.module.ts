@@ -12,6 +12,8 @@ import { Document, DocumentSchema } from './entities/document.entity';
 import { AuthModule } from '../auth/auth.module';
 import { UsersModule } from '../users/users.module';
 import { Constants } from '../config/constants';
+import { DevelopmentApiGuard } from './guards/development-api.guard';
+// import { InternalApiGuard } from './guards/internal-api.guard'; // 生产环境使用
 
 @Module({
   imports: [
@@ -33,7 +35,9 @@ import { Constants } from '../config/constants';
   ],
   providers: [
     AgentsService, 
-    DocumentsService
+    DocumentsService,
+    DevelopmentApiGuard, // 注册开发环境守卫
+    // InternalApiGuard, // 生产环境使用
   ],
   exports: [AgentsService, DocumentsService],
 })

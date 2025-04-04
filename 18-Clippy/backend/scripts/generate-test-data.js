@@ -2,6 +2,7 @@
  * 测试数据生成脚本
  * 用于快速在开发环境中生成测试数据
  * 注意：此脚本会向数据库中添加测试数据，请谨慎在生产环境使用
+ * 更新日期: 2025/04/04 - 支持最新的实体结构和文件处理逻辑
  */
 
 const { MongoClient, ObjectId } = require('mongodb');
@@ -18,6 +19,9 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/clippy
 
 // 测试钱包地址(根据需要可自行替换为您的测试钱包)
 const TEST_WALLET_ADDRESS = '0x9a10f0e7d3efae5dad6a73cb7e53a8a6c3aaeebf72db5fc6b48b19d5b973a15b';
+
+// 文件下载URL的基础路径
+const FILE_BASE_URL = process.env.FILE_BASE_URL || 'http://localhost:5471/api/files';
 
 // 示例用户数据
 const testUsers = [
@@ -37,6 +41,9 @@ const testAgents = [
     industry: '金融',
     description: '专注于金融市场分析和投资建议的AI助手',
     isActive: true,
+    score: 85, // 评分字段 (0-100)
+    feedback: '这是一个优秀的金融分析助手，能提供有价值的市场洞察',
+    ratedAt: new Date(Date.now() - 3600000), // 评分时间（1小时前）
     createdAt: new Date(),
     updatedAt: new Date()
   },
@@ -45,6 +52,9 @@ const testAgents = [
     industry: '市场营销',
     description: '帮助制定和优化营销策略的AI助手',
     isActive: true,
+    score: 72, // 评分字段 (0-100)
+    feedback: '营销建议有深度，但有时缺乏创新性',
+    ratedAt: new Date(Date.now() - 7200000), // 评分时间（2小时前）
     createdAt: new Date(),
     updatedAt: new Date()
   },
@@ -53,6 +63,9 @@ const testAgents = [
     industry: '设计',
     description: '为产品设计提供创意和建议的AI助手',
     isActive: true,
+    score: null, // 尚未评分
+    feedback: null,
+    ratedAt: null,
     createdAt: new Date(),
     updatedAt: new Date()
   }
@@ -116,6 +129,23 @@ function generateTestDocuments(agentIds) {
       createdAt: new Date(),
       updatedAt: new Date()
     });
+    
+    // 添加更多文件类型，以便测试文件控制器和下载功能
+    // 创建TXT测试文件
+    const txtFilename = `test_${crypto.randomBytes(8).toString('hex')}.txt`;
+    const txtFile = createTestFile(uploadDir, txtFilename, '这是一个简单的文本文件，用于测试文件下载功能。');
+    
+    testDocs.push({
+      name: '项目说明',
+      description: '项目基本介绍和说明文档',
+      fileName: txtFilename,
+      filePath: txtFile.path,
+      fileSize: txtFile.size,
+      fileType: 'txt',
+      agent: agentId,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
   });
   
   return testDocs;
@@ -124,7 +154,7 @@ function generateTestDocuments(agentIds) {
 // 主函数
 async function main() {
   console.log('==================================');
-  console.log('Clippy 测试数据生成工具');
+  console.log('Clippy 测试数据生成工具 (更新版)');
   console.log('==================================\n');
   
   let client;
@@ -190,6 +220,24 @@ async function main() {
     console.log(`📄 文档: ${docResult.insertedCount}`);
     console.log(`\n🔑 测试钱包地址: ${TEST_WALLET_ADDRESS}`);
     console.log('\n✨ 可以使用此钱包地址并利用sign-message.js生成签名来登录系统');
+    
+    // 内部API测试信息
+    console.log('\n==================================');
+    console.log('内部API测试信息:');
+    console.log('==================================');
+    console.log(`🔗 获取所有Agent及文件URL: GET http://localhost:5471/api/internal/agents`);
+    
+    // 打印第一个Agent的ID，用于评分测试
+    if (agentIds.length > 0) {
+      console.log(`🔗 Agent评分测试: POST http://localhost:5471/api/internal/agents/${agentIds[0]}/rating`);
+      console.log(`   请求体: { "score": 90, "feedback": "这是一个测试评分" }`);
+    }
+    
+    // 打印第一个文档的ID，用于文件下载测试
+    if (docResult.insertedIds && Object.keys(docResult.insertedIds).length > 0) {
+      const firstDocId = docResult.insertedIds[0];
+      console.log(`🔗 文件下载测试: GET http://localhost:5471/api/files/${firstDocId}/download`);
+    }
     
   } catch (error) {
     console.error('❌ 生成测试数据时出错:', error);
