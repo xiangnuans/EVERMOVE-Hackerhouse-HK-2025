@@ -1,5 +1,13 @@
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
+import { useAuthStore } from "@/store/auth";
+import { ApiException } from "@/lib/api-error";
+import {
+  validateFile,
+  createFormData,
+  FileValidationError,
+} from "@/lib/file-upload";
+import { API_BASE_URL } from "@/hooks/useAuth";
 
 // 支持的文件类型配置
 export const ACCEPTED_IMAGE_TYPES = [
@@ -42,15 +50,32 @@ interface UploadOptions {
 }
 
 interface UploadResponse {
-  url: string;
   fileType: string;
   fileName: string;
+  url: string;
 }
 
-export function useFileUpload() {
+interface UploadProgress {
+  loaded: number;
+  total: number;
+  percentage: number;
+}
+
+interface UseFileUploadOptions {
+  onProgress?: (progress: UploadProgress) => void;
+  endpoint?: string;
+  additionalData?: Record<string, any>;
+}
+
+export function useFileUpload(options: UseFileUploadOptions = {}) {
   const [isUploading, setIsUploading] = useState(false);
-  const [progress, setProgress] = useState(0);
+  const [progress, setProgress] = useState<UploadProgress>({
+    loaded: 0,
+    total: 0,
+    percentage: 0,
+  });
   const { toast } = useToast();
+  const { token } = useAuthStore();
 
   // 验证文件
   const validateFile = (file: File, options?: UploadOptions) => {
@@ -71,76 +96,77 @@ export function useFileUpload() {
     }
   };
 
-  // 上传文件
-  const uploadFile = async (
-    file: File,
-    options?: UploadOptions
-  ): Promise<UploadResponse> => {
+  const uploadFile = async (file: File): Promise<UploadResponse> => {
     try {
       setIsUploading(true);
-      setProgress(0);
+      validateFile(file);
 
-      // 验证文件
-      validateFile(file, options);
+      const formData = createFormData(file, options.additionalData);
+      const endpoint = options.endpoint || "/api/upload";
+      const url = `${API_BASE_URL}${endpoint}`;
 
-      // 创建 FormData
-      const formData = new FormData();
-      formData.append("file", file);
-
-      // 使用 XMLHttpRequest 发送请求
-      return new Promise((resolve, reject) => {
+      return new Promise<UploadResponse>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
-        xhr.open("POST", options?.endpoint || "/api/upload");
-        xhr.setRequestHeader("Accept", "application/json");
 
-        xhr.upload.onprogress = (event: any) => {
-          const percentCompleted = Math.round(
-            (event.loaded * 100) / event.total
-          );
-          setProgress(percentCompleted);
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable) {
+            const progress = {
+              loaded: event.loaded,
+              total: event.total,
+              percentage: Math.round((event.loaded * 100) / event.total),
+            };
+            setProgress(progress);
+            options.onProgress?.(progress);
+          }
         };
 
         xhr.onload = () => {
-          if (xhr.status === 200) {
-            const response = JSON.parse(xhr.response);
-            toast({
-              title: "Upload Successful",
-              description: "Your file has been uploaded successfully.",
-            });
-            resolve(response);
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              const response = xhr.response as UploadResponse;
+              resolve(response);
+            } catch (error) {
+              reject(new Error("Failed to parse response"));
+            }
           } else {
-            reject(new Error("Upload failed"));
+            reject(
+              new ApiException({
+                statusCode: xhr.status,
+                message: "Upload failed",
+                error: xhr.statusText,
+              })
+            );
           }
         };
 
         xhr.onerror = () => {
-          reject(new Error("Upload failed"));
+          reject(new Error("Network error occurred"));
         };
+
+        xhr.open("POST", url);
+        xhr.responseType = "json";
+
+        if (token) {
+          xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+        }
 
         xhr.send(formData);
       });
     } catch (error) {
-      toast({
-        title: "Upload Failed",
-        description:
-          error instanceof Error ? error.message : "Unknown error occurred",
-        variant: "destructive",
-      });
-      throw error;
+      if (error instanceof FileValidationError) {
+        throw error;
+      }
+      throw new Error("Upload failed");
     } finally {
       setIsUploading(false);
-      setProgress(0);
     }
   };
 
   // 上传多个文件
-  const uploadMultipleFiles = async (
-    files: File[],
-    options?: UploadOptions
-  ): Promise<UploadResponse[]> => {
-    const results = [];
+  const uploadFiles = async (files: File[]): Promise<UploadResponse[]> => {
+    const results: UploadResponse[] = [];
     for (const file of files) {
-      const result = await uploadFile(file, options);
+      const result = await uploadFile(file);
       results.push(result);
     }
     return results;
@@ -148,7 +174,7 @@ export function useFileUpload() {
 
   return {
     uploadFile,
-    uploadMultipleFiles,
+    uploadFiles,
     isUploading,
     progress,
   };
