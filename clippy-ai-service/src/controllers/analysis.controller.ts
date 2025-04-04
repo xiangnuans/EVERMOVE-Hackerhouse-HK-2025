@@ -1,59 +1,96 @@
-import { Controller, Get, Post, Param, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Param, Body, UseGuards, Res, NotFoundException } from '@nestjs/common';
 import { DeepseekService } from '../services/deepseek.service';
 import { ApiKeyGuard } from '../guards/api-key.guard';
+import { Response } from 'express';
+import * as fs from 'fs';
+import * as path from 'path';
+import { ConfigService } from '@nestjs/config';
+import { InternalApiService } from '../services/internal-api.service';
 
-@Controller('api/internal')
-@UseGuards(ApiKeyGuard)
+@Controller('api')
 export class AnalysisController {
-  constructor(private readonly deepseekService: DeepseekService) {}
+  constructor(
+    private readonly deepseekService: DeepseekService,
+    private readonly internalApiService: InternalApiService,
+  ) {}
 
-  @Get('agents')
-  async getAllAgents() {
-    // TODO: 实现从数据库获取所有活跃Agent的逻辑
-    return [
-      {
-        id: "6087e35f3e5a2b1234567890",
-        name: "市场分析助手",
-        industry: "金融",
-        description: "专注于金融市场分析的AI助手",
-        score: 85,
-        feedback: "这是一个不错的Agent，但还有提升空间",
-        documents: [
-          {
-            id: "6087e35f3e5a2b1234567891",
-            name: "市场报告",
-            fileType: "pdf",
-            downloadUrl: "http://localhost:5471/api/files/6087e35f3e5a2b1234567891/download"
-          }
-        ]
-      }
-    ];
+  @Post('analysis')
+  async analyzeContent(@Body() body: { content: string }) {
+    return this.deepseekService.analyzeContent(body.content);
   }
 
-  @Post('agents/:id/rating')
+  @Get('internal/agents')
+  @UseGuards(ApiKeyGuard)
+  async getAllAgents() {
+    return this.internalApiService.getAllAgents();
+  }
+
+  @Post('internal/agents/:id/analyze')
+  @UseGuards(ApiKeyGuard)
+  async analyzeAgent(@Param('id') agentId: string) {
+    return this.deepseekService.analyzeAgent(agentId);
+  }
+
+  @Post('internal/agents/:id/rating')
+  @UseGuards(ApiKeyGuard)
   async updateAgentRating(
-    @Param('id') id: string,
-    @Body() body: { score: number; feedback: string }
+    @Param('id') agentId: string,
+    @Body() data: { score: number; feedback: string },
   ) {
-    // TODO: 实现更新Agent评分的逻辑
-    return {
-      _id: id,
-      name: "市场分析助手",
-      industry: "金融",
-      description: "专注于金融市场分析的AI助手",
-      owner: "6087e35f3e5a2b0987654321",
-      isActive: true,
-      score: body.score,
-      feedback: body.feedback,
-      ratedAt: new Date().toISOString(),
-      createdAt: "2023-04-27T10:00:00.000Z",
-      updatedAt: new Date().toISOString()
-    };
+    return this.internalApiService.updateAgentRating(
+      agentId,
+      data.score,
+      data.feedback,
+    );
   }
 
   @Get('files/:id/download')
-  async downloadFile(@Param('id') id: string) {
-    // TODO: 实现文件下载逻辑
-    throw new Error('File not found or has been deleted');
+  async downloadFile(@Param('id') id: string, @Res() res: Response) {
+    try {
+      // 在实际应用中，这里应该从数据库获取文件信息
+      // 这里我们模拟一个文件路径
+      const filePath = path.join(process.cwd(), 'uploads', `${id}.pdf`);
+      
+      // 检查文件是否存在
+      if (!fs.existsSync(filePath)) {
+        throw new NotFoundException('文件不存在或已被删除');
+      }
+      
+      // 获取文件信息
+      const stats = fs.statSync(filePath);
+      const fileSize = stats.size;
+      const fileType = path.extname(filePath).substring(1);
+      
+      // 设置响应头
+      res.setHeader('Content-Type', this.getContentType(fileType));
+      res.setHeader('Content-Disposition', `attachment; filename=${id}.${fileType}`);
+      res.setHeader('Content-Length', fileSize);
+      
+      // 创建文件流并发送
+      const fileStream = fs.createReadStream(filePath);
+      fileStream.pipe(res);
+      
+      return;
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      console.error('Error downloading file:', error);
+      throw new NotFoundException('文件不存在或已被删除');
+    }
+  }
+  
+  private getContentType(fileType: string): string {
+    const contentTypes = {
+      'pdf': 'application/pdf',
+      'jpg': 'image/jpeg',
+      'jpeg': 'image/jpeg',
+      'png': 'image/png',
+      'gif': 'image/gif',
+      'mov': 'video/quicktime',
+      'mp4': 'video/mp4'
+    };
+    
+    return contentTypes[fileType] || 'application/octet-stream';
   }
 } 

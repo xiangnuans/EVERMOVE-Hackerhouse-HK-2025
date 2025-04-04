@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { DeepseekService } from './services/deepseek.service';
 import { AnalysisController } from './controllers/analysis.controller';
+import { DeepseekService } from './services/deepseek.service';
+import { InternalApiService } from './services/internal-api.service';
 
 @Module({
   imports: [
@@ -10,6 +11,6 @@ import { AnalysisController } from './controllers/analysis.controller';
     }),
   ],
   controllers: [AnalysisController],
-  providers: [DeepseekService],
+  providers: [DeepseekService, InternalApiService],
 })
 export class AppModule {} 
