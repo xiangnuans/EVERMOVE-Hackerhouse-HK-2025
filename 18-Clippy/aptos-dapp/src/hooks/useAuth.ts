@@ -3,7 +3,7 @@ import { useAuthStore } from "@/store/auth";
 import type { AuthState } from "@/store/auth";
 import React from "react";
 
-export const API_BASE_URL = "https://clippy.life";
+export const API_BASE_URL = "https://test-clippy-api.cyberdoge.xyz";
 
 interface AuthResponse {
   access_token: string;

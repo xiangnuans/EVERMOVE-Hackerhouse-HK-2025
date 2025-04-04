@@ -84,7 +84,7 @@ export default function KnowledgeBasePage() {
         </div>
 
         {/* Continue Button */}
-        <Button variant="primary" onClick={() => router.push("/ai-agents")}>
+        <Button variant="primary" onClick={() => router.push("/")}>
           Create
         </Button>
       </div>

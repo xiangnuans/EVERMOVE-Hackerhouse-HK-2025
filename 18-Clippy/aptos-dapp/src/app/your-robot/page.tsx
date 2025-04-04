@@ -36,11 +36,6 @@ export default function YourRobotPage() {
   }, [error, toast]);
 
   useEffect(() => {
-    if (!isLoading && !latestAgent) {
-      router.push("/customize-agent");
-      return;
-    }
-
     const timer = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 100) {

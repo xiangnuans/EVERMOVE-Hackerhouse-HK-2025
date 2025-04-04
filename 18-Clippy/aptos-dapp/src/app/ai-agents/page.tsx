@@ -1,16 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import {
-  ChevronLeft,
-  GraduationCap,
-  DollarSign,
-  Settings,
-  Stethoscope,
-} from "lucide-react";
+import { GraduationCap, DollarSign, Settings, Stethoscope } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Footer } from "@/components/Footer";
 
 const agentTypes = [
@@ -44,6 +38,11 @@ export default function AIAgentsPage() {
   const router = useRouter();
   const [selectedAgents, setSelectedAgents] = useState<string[]>([]);
 
+  // 预加载下一个页面
+  useEffect(() => {
+    router.prefetch("/buy-robot");
+  }, [router]);
+
   const handleAgentToggle = (agentId: string) => {
     setSelectedAgents((prev) =>
       prev.includes(agentId)
@@ -54,7 +53,8 @@ export default function AIAgentsPage() {
 
   const handleContinue = () => {
     if (selectedAgents.length > 0) {
-      router.push("/buy-robot");
+      // 使用 replace 而不是 push 来减少历史记录堆栈
+      router.replace("/buy-robot");
     }
   };
 
@@ -62,12 +62,12 @@ export default function AIAgentsPage() {
     <div className="min-h-screen bg-[#0A0A0B] text-white py-8 pb-24">
       <div className="max-w-md mx-auto px-5">
         {/* Back button */}
-        <button
+        {/* <button
           onClick={() => router.back()}
           className="flex items-center space-x-2 text-white/80 hover:text-white mb-8"
         >
           <ChevronLeft className="h-5 w-5" />
-        </button>
+        </button> */}
 
         {/* Header */}
         <div className="mb-8">

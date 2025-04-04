@@ -1,14 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
-import { useCreateAgent } from "@/hooks/useAgents";
+import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
-import { ApiException } from "@/lib/api-error";
+import { useAuthStore } from "@/store/auth";
 
 export default function CustomizeAgentPage() {
   const router = useRouter();
@@ -16,9 +15,31 @@ export default function CustomizeAgentPage() {
   const [name, setName] = useState("");
   const [personality, setPersonality] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const createAgent = useCreateAgent();
+  const token = useAuthStore((state) => state.token);
 
-  const handleCreate = async () => {
+  // 检查登录状态
+  useEffect(() => {
+    if (!token) {
+      toast({
+        title: "Authentication Required",
+        description: "Please connect your wallet and sign in to continue",
+        variant: "destructive",
+      });
+      router.push("/");
+    }
+  }, [router, toast, token]);
+
+  const handleContinue = () => {
+    if (!token) {
+      toast({
+        title: "Authentication Required",
+        description: "Please connect your wallet and sign in to continue",
+        variant: "destructive",
+      });
+      router.push("/");
+      return;
+    }
+
     if (!name.trim() || !personality.trim()) {
       toast({
         title: "Validation Error",
@@ -28,37 +49,13 @@ export default function CustomizeAgentPage() {
       return;
     }
 
-    try {
-      setIsSubmitting(true);
-      await createAgent.mutateAsync({
-        name: name.trim(),
-        industry: "AI Assistant", // Default industry
-        description: personality.trim(),
-      });
+    // 将表单数据作为查询参数传递到下一个页面
+    const searchParams = new URLSearchParams({
+      name: name.trim(),
+      personality: personality.trim(),
+    });
 
-      toast({
-        title: "Success",
-        description: "AI Agent created successfully",
-      });
-
-      router.push("/your-robot");
-    } catch (error) {
-      if (error instanceof ApiException) {
-        toast({
-          title: "Error",
-          description: error.message,
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to create AI Agent",
-          variant: "destructive",
-        });
-      }
-    } finally {
-      setIsSubmitting(false);
-    }
+    router.push(`/knowledge-base?${searchParams.toString()}`);
   };
 
   return (
@@ -122,10 +119,10 @@ export default function CustomizeAgentPage() {
         <div className="flex justify-center items-center mb-8">
           <Button
             variant="primary"
-            onClick={handleCreate}
+            onClick={handleContinue}
             disabled={isSubmitting}
           >
-            {isSubmitting ? "Creating..." : "Create"}
+            Continue
           </Button>
         </div>
 

@@ -72,19 +72,25 @@ export function MuiWalletSelector() {
   const handleLogout = async () => {
     try {
       await logout();
-      await disconnect();
+      if (connected) {
+        await disconnect();
+      }
       showSuccessToast("Logged Out", "You have been successfully logged out.");
     } catch (error) {
+      console.error("Logout error:", error);
       showErrorToast("Logout Failed", "Failed to logout. Please try again.");
     }
   };
 
   useEffect(() => {
     if (isError) {
-      showErrorToast(
-        "Wallet Login Failed",
-        "Please try connecting your wallet again. If the problem persists, contact support."
-      );
+      // Temporarily disabled login error toast
+      toast({
+        title: "Wallet Login Failed",
+        description:
+          "Please try connecting your wallet again. If the problem persists, contact support.",
+        variant: "destructive",
+      });
     }
   }, [isError, error, toast]);
 
@@ -95,7 +101,7 @@ export function MuiWalletSelector() {
           setHasAttemptedSignIn(true);
           const message = "CLIPPY: INFUSE SOUL INTO HUMANOID ROBOTS";
           const nonce = generateNonce();
-          const fullMessage = `${message}\nNonce: ${nonce}`;
+          const fullMessage = `${message}`;
 
           const signResult = await signMessage({
             message: fullMessage,
@@ -113,10 +119,12 @@ export function MuiWalletSelector() {
           });
         } catch (error) {
           console.error("Sign in error:", error);
-          showErrorToast(
-            "Wallet Connection Error",
-            "Failed to sign message. Please try again."
-          );
+          // Temporarily disabled sign in error toast
+          toast({
+            title: "Wallet Connection Error",
+            description: "Failed to sign message. Please try again.",
+            variant: "destructive",
+          });
           setHasAttemptedSignIn(false);
         }
       }

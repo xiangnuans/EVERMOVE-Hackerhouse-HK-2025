@@ -12,14 +12,6 @@ export default function MyAssetsPage() {
   return (
     <div className="min-h-screen bg-[#0A0A0B] text-white py-8">
       <div className="max-w-md mx-auto px-5">
-        {/* Back button */}
-        {/* <button
-          onClick={() => router.back()}
-          className="flex items-center space-x-2 text-white/80 hover:text-white mb-6"
-        >
-          <ChevronLeft className="h-5 w-5" />
-        </button> */}
-
         {/* Header */}
         <h1 className="text-3xl font-medium mb-8">My Life++ Assets</h1>
 

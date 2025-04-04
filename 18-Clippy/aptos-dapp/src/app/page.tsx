@@ -43,12 +43,6 @@ export default function HomePage() {
           >
             Get Started
           </Button>
-          {/* <Button
-            variant="secondary"
-            onClick={() => router.push("/learn-more")}
-          >
-            Learn More
-          </Button> */}
         </div>
       </div>
     </div>

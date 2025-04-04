@@ -7,11 +7,29 @@ import { Button } from "@/components/ui/button";
 import { Footer } from "@/components/Footer";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { useToast } from "@/components/ui/use-toast";
+import { useState } from "react";
 
 export default function BuyRobotPage() {
   const router = useRouter();
   const { connected } = useWallet();
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
+
+  const simulateProgress = () => {
+    setProgress(0);
+    const interval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 100) {
+          clearInterval(interval);
+          setIsLoading(false);
+          router.push("/your-robot");
+          return 100;
+        }
+        return prev + 10;
+      });
+    }, 200);
+  };
 
   const handleBuyNow = () => {
     if (!connected) {
@@ -24,7 +42,8 @@ export default function BuyRobotPage() {
       });
       return;
     }
-    router.push("/your-robot");
+    setIsLoading(true);
+    simulateProgress();
   };
 
   return (
@@ -62,8 +81,24 @@ export default function BuyRobotPage() {
 
         {/* Buy Button */}
         <div className="flex justify-center">
-          <Button variant="primary" onClick={handleBuyNow}>
-            Buy now
+          <Button
+            variant="primary"
+            onClick={handleBuyNow}
+            disabled={isLoading}
+            className="relative"
+          >
+            {isLoading ? (
+              <>
+                <div className="absolute inset-0 bg-[#3730A3] opacity-20"></div>
+                <div
+                  className="absolute inset-0 bg-[#3730A3] transition-all duration-200"
+                  style={{ width: `${progress}%` }}
+                ></div>
+                <span className="relative">Processing...</span>
+              </>
+            ) : (
+              "Buy now"
+            )}
           </Button>
         </div>
       </div>
