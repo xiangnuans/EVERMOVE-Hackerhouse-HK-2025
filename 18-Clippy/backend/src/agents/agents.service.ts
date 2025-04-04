@@ -46,7 +46,7 @@ export class AgentsService {
         id: doc._id.toString(),
         name: doc.name,
         fileType: doc.fileType,
-        downloadUrl: `${Constants.INTERNAL.FILE_BASE_URL}/${doc._id}/download`,
+        downloadUrl: `${Constants.INTERNAL.FILE_PATH}/${doc._id}/download`,
       }));
       
       // 添加到结果数组

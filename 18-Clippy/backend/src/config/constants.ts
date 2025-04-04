@@ -14,6 +14,8 @@ export const Constants = {
   APP: {
     NAME: 'Clippy',
     VERSION: '1.0.0',
+    // 基础URL，用于构建完整URL路径
+    BASE_URL: process.env.BASE_URL || 'http://localhost:5471',
   },
 
   // API配置
@@ -29,8 +31,12 @@ export const Constants = {
     ALLOWED_IPS: process.env.INTERNAL_ALLOWED_IPS 
       ? process.env.INTERNAL_ALLOWED_IPS.split(',') 
       : ['127.0.0.1', 'localhost', '::1', '192.168.0.0/16', '10.0.0.0/8'],
-    // 文件下载URL的基础路径
-    FILE_BASE_URL: process.env.FILE_BASE_URL || 'http://localhost:5471/api/files',
+    // 文件下载URL的路径部分（不包含域名）
+    FILE_PATH: '/api/files',
+    // 获取完整的文件下载URL（根据环境配置动态生成）
+    get FILE_BASE_URL() {
+      return `${Constants.APP.BASE_URL}${this.FILE_PATH}`;
+    },
   },
 };
 

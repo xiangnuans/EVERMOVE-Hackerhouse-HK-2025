@@ -1,14 +1,12 @@
-import { Injectable, CanActivate, ExecutionContext, UnauthorizedException, Logger, ForbiddenException } from '@nestjs/common';
+import { Injectable, CanActivate, ExecutionContext, Logger } from '@nestjs/common';
 import { Request } from 'express';
-import { INTERNAL_API_KEY, INTERNAL_ALLOWED_IPS } from '../../config/constants';
 
 @Injectable()
-export class InternalApiGuard implements CanActivate {
-  private readonly logger = new Logger(InternalApiGuard.name);
+export class DevelopmentApiGuard implements CanActivate {
+  private readonly logger = new Logger(DevelopmentApiGuard.name);
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
-    const apiKey = request.headers['x-api-key'] as string;
     let clientIp = request.ip || 
                    request.connection.remoteAddress || 
                    request.headers['x-forwarded-for'] as string;
@@ -18,24 +16,29 @@ export class InternalApiGuard implements CanActivate {
       clientIp = clientIp.replace('::ffff:', '');
     }
 
-    this.logger.debug(`内部API请求: ${request.method} ${request.url} 来自IP: ${clientIp}`);
+    this.logger.debug(`API请求(开发模式): ${request.method} ${request.url} 来自IP: ${clientIp}`);
 
-    // 验证API密钥
+    /* 
+    // 在生产环境中，你应该取消注释以下代码以启用API密钥验证
+    const apiKey = request.headers['x-api-key'] as string;
     if (!apiKey || apiKey !== INTERNAL_API_KEY) {
       this.logger.warn(`内部API请求API密钥验证失败: ${request.url}`);
       throw new UnauthorizedException('无效的API密钥');
     }
 
-    // 验证IP地址是否在允许列表中
+    // 在生产环境中，你应该取消注释以下代码以启用IP地址验证
     if (!this.isIpAllowed(clientIp)) {
       this.logger.warn(`内部API请求IP地址不在允许列表中: ${clientIp}`);
       throw new ForbiddenException('IP地址不在允许列表中');
     }
+    */
 
-    this.logger.log(`内部API请求验证通过: ${request.method} ${request.url}`);
+    this.logger.log(`API请求验证通过(开发模式): ${request.method} ${request.url}`);
     return true;
   }
 
+  /* 
+  // 在生产环境中使用此方法验证IP地址
   private isIpAllowed(ip: string): boolean {
     // 如果IP是undefined或空，拒绝访问
     if (!ip) return false;
@@ -63,4 +66,5 @@ export class InternalApiGuard implements CanActivate {
       return false;
     });
   }
+  */
 } 
