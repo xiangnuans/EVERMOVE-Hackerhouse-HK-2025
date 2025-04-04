@@ -10,11 +10,13 @@ import { FilesController } from './files.controller';
 import { Agent, AgentSchema } from './entities/agent.entity';
 import { Document, DocumentSchema } from './entities/document.entity';
 import { AuthModule } from '../auth/auth.module';
+import { UsersModule } from '../users/users.module';
 import { Constants } from '../config/constants';
 
 @Module({
   imports: [
     AuthModule,
+    UsersModule,
     MongooseModule.forFeature([
       { name: Agent.name, schema: AgentSchema },
       { name: Document.name, schema: DocumentSchema },
