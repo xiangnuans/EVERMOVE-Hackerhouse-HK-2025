@@ -2,6 +2,8 @@
 
 import { useRouter, usePathname } from "next/navigation";
 import { Home, ShoppingBag, User } from "lucide-react";
+import { memo } from "react";
+import Link from "next/link";
 
 const navItems = [
   {
@@ -29,8 +31,24 @@ const navItems = [
   },
 ];
 
+const NavItem = memo(
+  ({ item, isActive }: { item: (typeof navItems)[0]; isActive: boolean }) => (
+    <Link
+      href={item.path}
+      className={`flex flex-col items-center space-y-1 ${
+        isActive ? "text-[#3730A3]" : "text-gray-400 hover:text-gray-300"
+      }`}
+      prefetch={true}
+    >
+      <item.icon className="h-6 w-6" />
+      <span className="text-xs">{item.label}</span>
+    </Link>
+  )
+);
+
+NavItem.displayName = "NavItem";
+
 export function Footer() {
-  const router = useRouter();
   const pathname = usePathname();
 
   const isActive = (item: (typeof navItems)[0]) => {
@@ -42,18 +60,7 @@ export function Footer() {
       <div className="max-w-md mx-auto px-8 py-4">
         <div className="flex justify-between items-center">
           {navItems.map((item) => (
-            <button
-              key={item.label}
-              onClick={() => router.push(item.path)}
-              className={`flex flex-col items-center space-y-1 ${
-                isActive(item)
-                  ? "text-[#3730A3]"
-                  : "text-gray-400 hover:text-gray-300"
-              }`}
-            >
-              <item.icon className="h-6 w-6" />
-              <span className="text-xs">{item.label}</span>
-            </button>
+            <NavItem key={item.path} item={item} isActive={isActive(item)} />
           ))}
         </div>
       </div>
