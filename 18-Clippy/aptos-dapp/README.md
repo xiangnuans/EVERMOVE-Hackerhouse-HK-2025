@@ -1,53 +1,113 @@
-# Aptos Wallet Adapter Demo App
+# LIFE++ | AI Digital Avatar Platform
 
-This project is a demo of the Aptos Wallet Selector using [Next.js](https://nextjs.org/) and [shadcn/ui](https://ui.shadcn.com/).
+LIFE++ is a cutting-edge AI Digital Avatar Platform built on Aptos blockchain, designed to infuse soul into humanoid robots and create digital consciousness.
 
-A live version is hosted at:
-https://aptos-labs.github.io/aptos-wallet-adapter
+## 🌟 Features
 
-## Use shadcn/ui wallet selector for your own app
+- **Wallet Integration**
+  - Seamless Aptos wallet connection
+  - Secure authentication with message signing
+  - Persistent session management
 
-If you want to add the shadcn/ui Aptos wallet selector to your shadcn-based app, follow these steps:
+- **User Management**
+  - Profile management
+  - Secure authentication system
+  - Token-based authorization
 
-- Follow the [shadcn/ui installation instructions](https://ui.shadcn.com/docs/installation) if you haven't already configured it in your app.
+- **Modern UI/UX**
+  - Dark mode interface
+  - Responsive design
+  - Toast notifications system
+  - Material-UI components
 
-- Run the following command to install all of the shadcn/ui components that the wallet selector depends on:
+## 🚀 Getting Started
 
+### Prerequisites
+
+- Node.js 16+
+- npm or yarn
+- Aptos Wallet (Petra, Martian, etc.)
+
+### Installation
+
+1. Clone the repository
 ```bash
-npx shadcn@latest add button collapsible dialog dropdown-menu toast
+git clone https://github.com/your-username/EVERMOVE-Hackerhouse-HK-2025.git
+cd EVERMOVE-Hackerhouse-HK-2025/18-Clippy/aptos-dapp
 ```
 
-- Copy the [wallet-selector.tsx](./src/components/WalletSelector.tsx) file from this repo to your `src/components/` directory.
+2. Install dependencies
+```bash
+npm install
+# or
+yarn install
+```
 
-- If you have not already configured `AptosWalletAdapterProvider` for your app, you can also copy the [wallet-provider.tsx](./src/components/WalletProvider.tsx) file from this repo. Be sure to install the `@aptos-labs/wallet-adapter-react` package and the wallet adapter plugins for the wallet options you plan to support.
-
-- Wrap your app with the `WalletProvider` component. See [layout.tsx](./src/app/layout.tsx) for an example.
-
-- Render `<WalletSelector />` in your app where you want to place the "Connect Wallet" button. See [page.tsx](./src/app/page.tsx) as an example.
-
-## Run demo app locally
-
-First, run the development server:
-
+3. Start the development server
 ```bash
 npm run dev
 # or
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [https://localhost:3000](https://localhost:3000) with your browser to see the result.
+4. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🔧 Tech Stack
 
-## Learn more
+- **Frontend**
+  - Next.js 14
+  - React
+  - TypeScript
+  - TailwindCSS
+  - Material-UI
+  - shadcn/ui
 
-To learn more about Next.js, take a look at the following resources:
+- **Blockchain**
+  - Aptos Network
+  - @aptos-labs/wallet-adapter
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **State Management**
+  - Zustand
+  - React Query
 
-- [shadcn/ui Documentation](https://ui.shadcn.com/docs) - learn about shadcn/ui features and API.
+## 🔐 Authentication Flow
+
+1. Connect Aptos wallet
+2. Sign authentication message
+3. Receive JWT token
+4. Access protected routes and features
+
+## 🎨 UI Components
+
+- Custom Toast notifications
+- Wallet connection dialog
+- Loading states
+- Error handling
+- Responsive navigation
+
+## 📝 API Integration
+
+Base URL: `https://clippy.life`
+
+### Endpoints:
+- `/api/auth/login` - Wallet authentication
+- `/api/auth/logout` - User logout
+- `/api/auth/profile` - User profile management
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- [Aptos Labs](https://aptoslabs.com/)
+- [EVERMOVE Hackerhouse HK 2025](https://evermove.xyz/)
+- All contributors and participants
