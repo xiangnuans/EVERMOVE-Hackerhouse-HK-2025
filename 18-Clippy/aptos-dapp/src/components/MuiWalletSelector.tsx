@@ -4,7 +4,7 @@ import { WalletConnector } from "@aptos-labs/wallet-adapter-mui-design";
 import { ThemeProvider, createTheme } from "@mui/material";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { useAuth } from "@/hooks/useAuth";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 
 const theme = createTheme({
@@ -49,24 +49,50 @@ function generateNonce(): string {
 }
 
 export function MuiWalletSelector() {
-  const { account, connected, signMessage } = useWallet();
-  const { mutate: signIn, isError, error } = useAuth();
+  const { account, connected, signMessage, disconnect } = useWallet();
+  const { mutate: signIn, isError, error, logout } = useAuth();
   const { toast } = useToast();
+  const [hasAttemptedSignIn, setHasAttemptedSignIn] = useState(false);
+
+  const showErrorToast = (title: string, description: string) => {
+    toast({
+      title,
+      description,
+      variant: "destructive",
+    });
+  };
+
+  const showSuccessToast = (title: string, description: string) => {
+    toast({
+      title,
+      description,
+    });
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      await disconnect();
+      showSuccessToast("Logged Out", "You have been successfully logged out.");
+    } catch (error) {
+      showErrorToast("Logout Failed", "Failed to logout. Please try again.");
+    }
+  };
 
   useEffect(() => {
     if (isError) {
-      toast({
-        title: "Login Failed",
-        description: error?.message || "Failed to login with wallet",
-        variant: "destructive",
-      });
+      showErrorToast(
+        "Wallet Login Failed",
+        "Please try connecting your wallet again. If the problem persists, contact support."
+      );
     }
   }, [isError, error, toast]);
 
   useEffect(() => {
     const handleSignIn = async () => {
-      if (connected && account?.address) {
+      if (connected && account?.address && !hasAttemptedSignIn) {
         try {
+          setHasAttemptedSignIn(true);
           const message = "CLIPPY: INFUSE SOUL INTO HUMANOID ROBOTS";
           const nonce = generateNonce();
           const fullMessage = `${message}\nNonce: ${nonce}`;
@@ -87,12 +113,11 @@ export function MuiWalletSelector() {
           });
         } catch (error) {
           console.error("Sign in error:", error);
-          toast({
-            title: "Error",
-            description:
-              error instanceof Error ? error.message : "Failed to sign message",
-            variant: "destructive",
-          });
+          showErrorToast(
+            "Wallet Connection Error",
+            "Failed to sign message. Please try again."
+          );
+          setHasAttemptedSignIn(false);
         }
       }
     };
@@ -105,6 +130,7 @@ export function MuiWalletSelector() {
     signMessage,
     signIn,
     toast,
+    hasAttemptedSignIn,
   ]);
 
   return (

@@ -29,8 +29,8 @@ const toastVariants = cva(
   {
     variants: {
       variant: {
-        default: "border",
-        destructive: "text-white",
+        default: "border bg-background",
+        destructive: "bg-red-600 border-red-400",
       },
     },
     defaultVariants: {
@@ -38,6 +38,30 @@ const toastVariants = cva(
     },
   }
 );
+
+const titleVariants = cva("text-lg font-semibold", {
+  variants: {
+    variant: {
+      default: "text-foreground",
+      destructive: "text-white",
+    },
+  },
+  defaultVariants: {
+    variant: "default",
+  },
+});
+
+const descriptionVariants = cva("text-base", {
+  variants: {
+    variant: {
+      default: "text-gray-400",
+      destructive: "text-white",
+    },
+  },
+  defaultVariants: {
+    variant: "default",
+  },
+});
 
 const Toast = React.forwardRef<
   React.ElementRef<typeof ToastPrimitives.Root>,
@@ -76,7 +100,7 @@ const ToastClose = React.forwardRef<
   <ToastPrimitives.Close
     ref={ref}
     className={cn(
-      "absolute right-2 top-2 rounded-md p-1 opacity-0 transition-opacity hover:text-white focus:opacity-100 focus:outline-none focus:ring-2 group-hover:opacity-100",
+      "absolute right-2 top-2 rounded-md p-1 text-white/70 hover:text-white transition-colors focus:outline-none focus:ring-2",
       className
     )}
     toast-close=""
@@ -89,11 +113,12 @@ ToastClose.displayName = ToastPrimitives.Close.displayName;
 
 const ToastTitle = React.forwardRef<
   React.ElementRef<typeof ToastPrimitives.Title>,
-  React.ComponentPropsWithoutRef<typeof ToastPrimitives.Title>
->(({ className, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof ToastPrimitives.Title> &
+    VariantProps<typeof titleVariants>
+>(({ className, variant, ...props }, ref) => (
   <ToastPrimitives.Title
     ref={ref}
-    className={cn("text-lg font-semibold", className)}
+    className={cn(titleVariants({ variant }), className)}
     {...props}
   />
 ));
@@ -101,11 +126,12 @@ ToastTitle.displayName = ToastPrimitives.Title.displayName;
 
 const ToastDescription = React.forwardRef<
   React.ElementRef<typeof ToastPrimitives.Description>,
-  React.ComponentPropsWithoutRef<typeof ToastPrimitives.Description>
->(({ className, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof ToastPrimitives.Description> &
+    VariantProps<typeof descriptionVariants>
+>(({ className, variant, ...props }, ref) => (
   <ToastPrimitives.Description
     ref={ref}
-    className={cn("text-base opacity-90", className)}
+    className={cn(descriptionVariants({ variant }), className)}
     {...props}
   />
 ));

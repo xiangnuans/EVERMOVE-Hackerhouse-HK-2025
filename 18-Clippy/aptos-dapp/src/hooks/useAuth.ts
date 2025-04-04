@@ -61,15 +61,48 @@ async function fetchUserProfile(): Promise<UserProfile> {
   return response.json();
 }
 
+async function logout(): Promise<void> {
+  const token = useAuthStore.getState().token;
+  if (token) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/auth/logout`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Logout failed");
+      }
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  }
+}
+
 export function useAuth() {
   const setAuth = useAuthStore((state: AuthState) => state.setAuth);
+  const clearAuth = useAuthStore((state: AuthState) => state.clearAuth);
 
-  return useMutation({
+  const loginMutation = useMutation({
     mutationFn: authenticate,
     onSuccess: (data: AuthResponse) => {
       setAuth(data.access_token, data.user);
     },
   });
+
+  const logoutMutation = useMutation({
+    mutationFn: logout,
+    onSuccess: () => {
+      clearAuth();
+    },
+  });
+
+  return {
+    ...loginMutation,
+    logout: logoutMutation.mutate,
+  };
 }
 
 export function useProfile() {

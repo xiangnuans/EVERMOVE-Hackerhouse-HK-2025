@@ -20,20 +20,20 @@ export function Toaster() {
           <Toast key={id} {...props}>
             <div className="grid gap-1">
               {title && (
-                <ToastTitle className="text-white text-lg">{title}</ToastTitle>
+                <ToastTitle variant={props.variant}>{title}</ToastTitle>
               )}
               {description && (
-                <ToastDescription className="text-gray-400 text-base">
+                <ToastDescription variant={props.variant}>
                   {description}
                 </ToastDescription>
               )}
             </div>
             {action}
-            <ToastClose className="text-white/70 hover:text-white" />
+            <ToastClose />
           </Toast>
         );
       })}
-      <ToastViewport className="p-4" />
+      <ToastViewport />
     </ToastProvider>
   );
 }
