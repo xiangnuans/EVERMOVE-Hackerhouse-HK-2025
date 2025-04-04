@@ -1,4 +1,4 @@
-module evermove_nft::evermove_nft {
+module clippy_nft::clippy_nft {
     use std::error;
     use std::signer;
     use std::string::{Self, String};
@@ -111,7 +111,7 @@ module evermove_nft::evermove_nft {
         let minter_addr = signer::address_of(minter);
         
         // 获取集合对象
-        let collection_addr = collection::create_collection_address(&minter_addr, &string::utf8(b"EverMove NFT Collection"));
+        let collection_addr = collection::create_collection_address(&minter_addr, &string::utf8(b"Clippy NFT Collection"));
         assert!(exists<CollectionConfig>(collection_addr), error::not_found(ECOLLECTION_DOES_NOT_EXIST));
         
         // 获取集合配置
@@ -159,7 +159,7 @@ module evermove_nft::evermove_nft {
         let admin_addr = signer::address_of(admin);
         
         // 获取集合对象
-        let collection_addr = collection::create_collection_address(&admin_addr, &string::utf8(b"EverMove NFT Collection"));
+        let collection_addr = collection::create_collection_address(&admin_addr, &string::utf8(b"Clippy NFT Collection"));
         assert!(exists<CollectionConfig>(collection_addr), error::not_found(ECOLLECTION_DOES_NOT_EXIST));
         
         // 获取集合配置
