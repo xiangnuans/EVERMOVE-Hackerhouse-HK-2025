@@ -5,6 +5,7 @@ import { UpdateAgentRatingDto } from './dto/update-agent-rating.dto';
 import { DevelopmentApiGuard } from './guards/development-api.guard'; // 开发环境使用
 import { AgentWithDocuments } from './interfaces/agent-with-documents.interface';
 import { AgentDocument } from './entities/agent.entity';
+import { Constants } from '../config/constants';
 
 @Controller('internal/agents')
 @UseGuards(DevelopmentApiGuard) // 开发环境中使用开放的守卫
@@ -19,8 +20,12 @@ export class InternalApiController {
    * 生产环境：需要API密钥和IP限制
    */
   @Get()
-  async findAllWithDocumentUrls(): Promise<AgentWithDocuments[]> {
-    return this.agentsService.findAllWithDocumentUrls();
+  async findAllWithDocumentUrls(): Promise<{ baseUrl: string; agents: AgentWithDocuments[] }> {
+    const agents = await this.agentsService.findAllWithDocumentUrls();
+    return {
+      baseUrl: Constants.APP.BASE_URL, // 添加BASE_URL到响应中
+      agents: agents,
+    };
   }
 
   /**

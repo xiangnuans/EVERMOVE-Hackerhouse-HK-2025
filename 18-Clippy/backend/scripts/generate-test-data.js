@@ -20,8 +20,8 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/clippy
 // Test wallet address (replace with your own test wallet if needed)
 const TEST_WALLET_ADDRESS = '0x9a10f0e7d3efae5dad6a73cb7e53a8a6c3aaeebf72db5fc6b48b19d5b973a15b';
 
-// Base URL for file downloads
-const FILE_BASE_URL = process.env.FILE_BASE_URL || 'http://localhost:5471/api/files';
+// Base URL for API
+const BASE_URL = process.env.BASE_URL || 'http://localhost:5471';
 
 // Sample user data
 const testUsers = [
@@ -267,18 +267,18 @@ async function main() {
     console.log('\n==================================');
     console.log('Internal API Test Information:');
     console.log('==================================');
-    console.log(`🔗 Get all Agents with file URLs: GET http://localhost:5471/api/internal/agents`);
+    console.log(`🔗 Get all Agents with file URLs: GET ${BASE_URL}/api/internal/agents`);
     
     // Print the first Agent's ID for rating test
     if (agentIds.length > 0) {
-      console.log(`🔗 Agent rating test: POST http://localhost:5471/api/internal/agents/${agentIds[0]}/rating`);
+      console.log(`🔗 Agent rating test: POST ${BASE_URL}/api/internal/agents/${agentIds[0]}/rating`);
       console.log(`   Request body: { "score": 90, "feedback": "This is a test rating" }`);
     }
     
     // Print the first document's ID for file download test
     if (docResult.insertedIds && Object.keys(docResult.insertedIds).length > 0) {
       const firstDocId = docResult.insertedIds[0];
-      console.log(`🔗 File download test: GET http://localhost:5471/api/files/${firstDocId}/download`);
+      console.log(`🔗 File download test: GET ${BASE_URL}/api/files/${firstDocId}/download`);
     }
     
   } catch (error) {

@@ -20,6 +20,7 @@ function logEnvironmentInfo() {
   globalLogger.log(`- MONGODB_URI: ${process.env.MONGODB_URI ? '已设置' : '未设置，使用默认值'}`);
   globalLogger.log(`- JWT_SECRET: ${process.env.JWT_SECRET ? '已设置' : '未设置，使用默认值'}`);
   globalLogger.log(`- APTOS_NODE_URL: ${process.env.APTOS_NODE_URL ? '已设置' : '未设置，使用默认值'}`);
+  globalLogger.log(`- BASE_URL: ${process.env.BASE_URL || 'http://localhost:5471 (默认)'}`);
 }
 
 // 确保上传目录存在
