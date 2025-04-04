@@ -27,15 +27,18 @@ export function useAutoConnect(): AutoConnectContextState {
 export const AutoConnectProvider: FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [autoConnect, setAutoConnect] = useState(false);
+  const [autoConnect, setAutoConnect] = useState(true);
 
   useEffect(() => {
-    // Wait until the app hydrates before populating `autoConnect` from local storage
     try {
       const isAutoConnect = localStorage.getItem(
         AUTO_CONNECT_LOCAL_STORAGE_KEY
       );
-      if (isAutoConnect) return setAutoConnect(JSON.parse(isAutoConnect));
+      if (isAutoConnect === "false") {
+        setAutoConnect(false);
+      } else {
+        localStorage.setItem(AUTO_CONNECT_LOCAL_STORAGE_KEY, "true");
+      }
     } catch (e) {
       if (typeof window !== "undefined") {
         console.error(e);
@@ -45,14 +48,10 @@ export const AutoConnectProvider: FC<{ children: ReactNode }> = ({
 
   useEffect(() => {
     try {
-      if (!autoConnect) {
-        localStorage.removeItem(AUTO_CONNECT_LOCAL_STORAGE_KEY);
-      } else {
-        localStorage.setItem(
-          AUTO_CONNECT_LOCAL_STORAGE_KEY,
-          JSON.stringify(autoConnect)
-        );
-      }
+      localStorage.setItem(
+        AUTO_CONNECT_LOCAL_STORAGE_KEY,
+        JSON.stringify(autoConnect)
+      );
     } catch (error: any) {
       if (typeof window !== "undefined") {
         console.error(error);

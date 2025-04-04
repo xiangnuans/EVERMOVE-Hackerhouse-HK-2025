@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-interface UserProfile {
+export interface User {
   id: string;
   walletAddress: string;
   username: string | null;
@@ -11,9 +11,8 @@ interface UserProfile {
 
 export interface AuthState {
   token: string | null;
-  user: UserProfile | null;
-  isAuthenticated: boolean;
-  setAuth: (token: string, user: UserProfile) => void;
+  user: User | null;
+  setAuth: (token: string, user: User) => void;
   clearAuth: () => void;
 }
 
@@ -22,28 +21,11 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       token: null,
       user: null,
-      isAuthenticated: false,
-      setAuth: (token, user) =>
-        set({
-          token,
-          user,
-          isAuthenticated: true,
-        }),
-      clearAuth: () =>
-        set({
-          token: null,
-          user: null,
-          isAuthenticated: false,
-        }),
+      setAuth: (token, user) => set({ token, user }),
+      clearAuth: () => set({ token: null, user: null }),
     }),
     {
       name: "auth-storage",
-      // 只持久化这些字段
-      partialize: (state) => ({
-        token: state.token,
-        user: state.user,
-        isAuthenticated: state.isAuthenticated,
-      }),
     }
   )
 );

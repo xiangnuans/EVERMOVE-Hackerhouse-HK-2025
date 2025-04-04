@@ -7,39 +7,38 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
-import { useAuthStore } from "@/store/auth";
+import { useAuth } from "@/hooks/useAuth";
+import { useAgentStore } from "@/store/agent";
 
 export default function CustomizeAgentPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [name, setName] = useState("");
   const [personality, setPersonality] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const token = useAuthStore((state) => state.token);
+  const [isSubmitting] = useState(false);
+  const { isAuthenticated, error } = useAuth();
+  const setAgentDetails = useAgentStore((state) => state.setAgentDetails);
 
-  // 检查登录状态
+  // 处理认证错误
   useEffect(() => {
-    if (!token) {
+    if (error) {
       toast({
-        title: "Authentication Required",
-        description: "Please connect your wallet and sign in to continue",
+        title: "Authentication Failed",
+        description: "Please try connecting your wallet again",
         variant: "destructive",
       });
       router.push("/");
     }
-  }, [router, toast, token]);
+  }, [error, router, toast]);
+
+  // 检查认证状态
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push("/");
+    }
+  }, [isAuthenticated, router]);
 
   const handleContinue = () => {
-    if (!token) {
-      toast({
-        title: "Authentication Required",
-        description: "Please connect your wallet and sign in to continue",
-        variant: "destructive",
-      });
-      router.push("/");
-      return;
-    }
-
     if (!name.trim() || !personality.trim()) {
       toast({
         title: "Validation Error",
@@ -49,13 +48,11 @@ export default function CustomizeAgentPage() {
       return;
     }
 
-    // 将表单数据作为查询参数传递到下一个页面
-    const searchParams = new URLSearchParams({
-      name: name.trim(),
-      personality: personality.trim(),
-    });
+    // 保存到 store
+    setAgentDetails(name.trim(), personality.trim());
 
-    router.push(`/knowledge-base?${searchParams.toString()}`);
+    // 直接跳转，不带参数
+    router.push("/knowledge-base");
   };
 
   return (

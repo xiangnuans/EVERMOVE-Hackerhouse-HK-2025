@@ -1,13 +1,15 @@
 import { useMutation, useQuery, UseQueryOptions } from "@tanstack/react-query";
 import { useAuthStore } from "@/store/auth";
-import type { AuthState } from "@/store/auth";
-import React from "react";
+import type { AuthState, User } from "@/store/auth";
+import React, { useEffect, useRef } from "react";
+import { useWallet } from "@aptos-labs/wallet-adapter-react";
 
 export const API_BASE_URL = "https://test-clippy-api.cyberdoge.xyz";
+export const SIGNATURE_MESSAGE = "CLIPPY: INFUSE SOUL INTO HUMANOID ROBOTS";
 
 interface AuthResponse {
   access_token: string;
-  user: UserProfile;
+  user: User;
 }
 
 interface UserProfile {
@@ -82,26 +84,70 @@ async function logout(): Promise<void> {
 }
 
 export function useAuth() {
-  const setAuth = useAuthStore((state: AuthState) => state.setAuth);
-  const clearAuth = useAuthStore((state: AuthState) => state.clearAuth);
+  const setAuth = useAuthStore((state) => state.setAuth);
+  const clearAuth = useAuthStore((state) => state.clearAuth);
+  const token = useAuthStore((state) => state.token);
+  const { account, signMessage } = useWallet();
+  const isAuthenticating = useRef(false);
+  const hasAutoAuthenticated = useRef(false);
 
   const loginMutation = useMutation({
     mutationFn: authenticate,
     onSuccess: (data: AuthResponse) => {
       setAuth(data.access_token, data.user);
+      isAuthenticating.current = false;
+    },
+    onError: () => {
+      isAuthenticating.current = false;
+      hasAutoAuthenticated.current = false;
     },
   });
 
-  const logoutMutation = useMutation({
-    mutationFn: logout,
-    onSuccess: () => {
-      clearAuth();
-    },
-  });
+  const handleWalletAuth = async () => {
+    if (isAuthenticating.current || token || !account?.address) {
+      return;
+    }
+
+    try {
+      isAuthenticating.current = true;
+      const fullMessage = `${SIGNATURE_MESSAGE}`;
+      const signResult = await signMessage({
+        message: fullMessage,
+        nonce: Math.random().toString(36).slice(2),
+      });
+
+      return await loginMutation.mutateAsync({
+        walletAddress: account.address.toString(),
+        signature: signResult.fullMessage,
+        publicKey: account.publicKey?.toString(),
+      });
+    } catch (error) {
+      isAuthenticating.current = false;
+      throw error;
+    }
+  };
+
+  // 自动认证
+  useEffect(() => {
+    if (
+      !token &&
+      account?.address &&
+      !isAuthenticating.current &&
+      !hasAutoAuthenticated.current
+    ) {
+      hasAutoAuthenticated.current = true;
+      handleWalletAuth().catch(() => {
+        // 错误处理由页面组件处理
+      });
+    }
+  }, [token, account?.address]);
 
   return {
-    ...loginMutation,
-    logout: logoutMutation.mutate,
+    signIn: handleWalletAuth,
+    isLoading: loginMutation.isPending,
+    error: loginMutation.error,
+    clearAuth,
+    isAuthenticated: !!token,
   };
 }
 

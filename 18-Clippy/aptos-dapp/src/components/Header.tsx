@@ -1,13 +1,12 @@
 "use client";
 import { MuiWalletSelector } from "@/components/MuiWalletSelector";
-import { useAuthStore } from "@/store/auth";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import Image from "next/image";
-
+import { useAuth } from "@/hooks/useAuth";
 export function Header() {
   const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     if (isAuthenticated) {

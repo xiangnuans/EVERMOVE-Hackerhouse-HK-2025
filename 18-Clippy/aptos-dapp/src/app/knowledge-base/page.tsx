@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { useAgentStore } from "@/store/agent";
+import { useToast } from "@/components/ui/use-toast";
 
 const knowledgeOptions = [
   { id: "social-media", label: "Social media" },
@@ -17,6 +19,19 @@ export default function KnowledgeBasePage() {
     "email",
   ]);
   const router = useRouter();
+  const { toast } = useToast();
+  const { name, personality } = useAgentStore();
+
+  useEffect(() => {
+    if (!name || !personality) {
+      toast({
+        title: "Invalid Access",
+        description: "Please complete the previous step first",
+        variant: "destructive",
+      });
+      router.push("/customize-agent");
+    }
+  }, [name, personality, router, toast]);
 
   const handleOptionToggle = (optionId: string) => {
     setSelectedOptions((prev) =>
